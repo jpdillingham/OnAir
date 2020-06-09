@@ -17,21 +17,27 @@ namespace OnAir_Agent
             processes ??= Array.Empty<string>();
             cameras ??= Array.Empty<int>();
 
-            if (processes.Any(process => Process.GetProcessesByName(process).Length > 0)) 
+            if (processes.Any(process => Process.GetProcessesByName(process).Length > 0))
             {
                 Console.WriteLine($"At least one watched process is running");
 
-                foreach (var camera in cameras)
-                {
-                    Console.WriteLine($"Checking camera {camera}");
-
-                    var cap = new VideoCapture(camera);
-                    if (cap.Open(camera) && !cap.Grab())
+                if (cameras.Length > 0) {
+                    foreach (var camera in cameras)
                     {
-                        Console.WriteLine($"Camera at index {camera} in use");
-                        await InvokeWebhook(webhook, on: true);
-                        return;
+                        Console.WriteLine($"Checking camera {camera}");
+
+                        var cap = new VideoCapture(camera);
+                        if (cap.Open(camera) && !cap.Grab())
+                        {
+                            Console.WriteLine($"Camera at index {camera} in use");
+                            await InvokeWebhook(webhook, on: true);
+                            return;
+                        }
                     }
+                }
+                else {
+                    await InvokeWebhook(webhook, on: true);
+                    return;
                 }
             }
 
@@ -45,7 +51,7 @@ namespace OnAir_Agent
             Console.WriteLine($"POST: {url}");
 
             var response = await new HttpClient().PostAsync(url, null);
-            
+
             Console.WriteLine(response);
         }
     }
