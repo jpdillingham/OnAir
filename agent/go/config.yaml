@@ -1,0 +1,4 @@
+processes:
+  - CptHost.exe
+interval: 5000
+webhook: http://192.168.2.31
