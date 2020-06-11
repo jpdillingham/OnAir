@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/mitchellh/go-ps"
 	"gopkg.in/yaml.v2"
@@ -14,27 +16,50 @@ const configFile = "config.yaml"
 
 func main() {
 	config := loadConfigFromYaml(configFile)
-	running := false
 
-	ps, _ := ps.Processes()
+	for {
+		running := false
 
-	for i := range ps {
-		name := ps[i].Executable()
+		ps, _ := ps.Processes()
 
-		for j := range config.Processes {
-			if name == config.Processes[j] {
-				running = true
+		for i := range ps {
+			name := ps[i].Executable()
+
+			for j := range config.Processes {
+				if name == config.Processes[j] {
+					running = true
+				}
 			}
 		}
+
+		if running {
+			fmt.Println("At least one monitored process is running.")
+			invokeWebhook(config.Webhook, "on")
+		} else {
+			fmt.Println("No monitored processes are running.")
+			invokeWebhook(config.Webhook, "off")
+		}
+
+		time.Sleep(time.Millisecond * time.Duration(config.Interval))
+	}
+}
+
+func invokeWebhook(webhook string, state string) {
+	client := http.Client{}
+
+	url := fmt.Sprintf("%s/%s", webhook, state)
+	request, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return
 	}
 
-	if running {
-		fmt.Println("At least one monitored process is running.")
-		// call webhook on here
-	} else {
-		fmt.Println("No monitored processes are running.")
-		// call webhook off here
+	response, err := client.Do(request)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
+
+	fmt.Println(response)
 }
 
 func loadConfigFromYaml(file string) (config Config) {
