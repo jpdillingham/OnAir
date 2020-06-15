@@ -60,6 +60,7 @@ func invokeWebhook(webhook string, state string) {
 	}
 
 	fmt.Println(response)
+	response.Body.Close()
 }
 
 func loadConfigFromYaml(file string) (config Config) {
