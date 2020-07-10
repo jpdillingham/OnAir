@@ -2,7 +2,9 @@
 
 This repo contains client and server applications designed to turn a light on when I'm on a Zoom meeting:
 
-<center><img src="docs/img/light.PNG"></center>
+<p align="center">
+  <img src="docs/img/light.PNG">
+</p>
 
 The client or "agent" application runs on my work computer and monitors Zoom, and the server application runs on a Raspberry Pi and raises a GPIO pin when the agent has detected a meeting.  The GPIO pin activates a relay, which provides 110v to the light.
 
